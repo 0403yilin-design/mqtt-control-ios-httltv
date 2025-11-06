@@ -27,6 +27,7 @@ const MQTTControl = () => {
   const [param2Value, setParam2Value] = useState('XXX 單位');
   const [param3Value, setParam3Value] = useState(0);
   const [param4Value, setParam4Value] = useState(0);
+  const [currentRadio, setCurrentRadio] = useState<string | null>(null);
   
   const clientRef = useRef<MqttClient | null>(null);
 
@@ -90,6 +91,7 @@ const MQTTControl = () => {
           'RadioRingCon77/slider_value2',
           'RadioRingCon77/switch1',
           'RadioRingCon77/switch2',
+          'RadioRingCon77/playmusic',
         ];
 
         topics.forEach(topic => {
@@ -121,6 +123,8 @@ const MQTTControl = () => {
           setSwitch1(msg === 'on' || msg === '1' || msg === 'true');
         } else if (topic === 'RadioRingCon77/switch2') {
           setSwitch2(msg === 'on' || msg === '1' || msg === 'true');
+        } else if (topic === 'RadioRingCon77/playmusic') {
+          setCurrentRadio(msg);
         }
       });
 
@@ -194,6 +198,7 @@ const MQTTControl = () => {
           'RadioRingCon77/slider_value2',
           'RadioRingCon77/switch1',
           'RadioRingCon77/switch2',
+          'RadioRingCon77/playmusic',
         ];
 
         topics.forEach(topic => {
@@ -225,6 +230,8 @@ const MQTTControl = () => {
           setSwitch1(msg === 'on' || msg === '1' || msg === 'true');
         } else if (topic === 'RadioRingCon77/switch2') {
           setSwitch2(msg === 'on' || msg === '1' || msg === 'true');
+        } else if (topic === 'RadioRingCon77/playmusic') {
+          setCurrentRadio(msg);
         }
       });
 
@@ -283,6 +290,11 @@ const MQTTControl = () => {
 
   const handleButtonPress = (topic: string, message: string) => {
     publishMessage(topic, message);
+  };
+
+  const handleRadioPress = (radioCode: string, radioName: string) => {
+    setCurrentRadio(radioCode);
+    publishMessage('RadioRingCon77/playmusic', radioCode);
   };
 
   const clearLog = () => {
@@ -392,56 +404,115 @@ const MQTTControl = () => {
       </View>
 
       {/* Radio Buttons Section */}
-      <View style={styles.radioSection}>
-        <TouchableOpacity
-          style={[styles.radioButton, { backgroundColor: colors.accent }, !isConnected && styles.disabledButton]}
-          onPress={() => handleButtonPress('RadioRingCon77/playmusic', '古典音樂')}
-          disabled={!isConnected}
-        >
-          <Text style={styles.radioButtonText}>古典音樂</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.radioButton, { backgroundColor: colors.accent }, !isConnected && styles.disabledButton]}
-          onPress={() => handleButtonPress('RadioRingCon77/playmusic', '台中廣播')}
-          disabled={!isConnected}
-        >
-          <Text style={styles.radioButtonText}>台中廣播</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.radioButton, { backgroundColor: colors.accent }, !isConnected && styles.disabledButton]}
-          onPress={() => handleButtonPress('RadioRingCon77/playmusic', '城市廣播')}
-          disabled={!isConnected}
-        >
-          <Text style={styles.radioButtonText}>城市廣播</Text>
-        </TouchableOpacity>
-      </View>
+      <View style={styles.radioSectionContainer}>
+        <Text style={styles.sectionTitle}>📻 收音機控制</Text>
+        {currentRadio && (
+          <View style={styles.currentRadioContainer}>
+            <Text style={styles.currentRadioLabel}>當前播放:</Text>
+            <Text style={styles.currentRadioValue}>{currentRadio}</Text>
+          </View>
+        )}
+        
+        <View style={styles.radioSection}>
+          <TouchableOpacity
+            style={[
+              styles.radioButton, 
+              { backgroundColor: '#9370DB' },
+              currentRadio === 'radio3' && styles.activeRadioButton,
+              !isConnected && styles.disabledButton
+            ]}
+            onPress={() => handleRadioPress('radio3', '美聲廣播')}
+            disabled={!isConnected}
+          >
+            <Text style={styles.radioButtonNumber}>按鈕1</Text>
+            <Text style={styles.radioButtonText}>美聲廣播</Text>
+            <Text style={styles.radioButtonCode}>radio3</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={[
+              styles.radioButton, 
+              { backgroundColor: '#4169E1' },
+              currentRadio === 'radio0' && styles.activeRadioButton,
+              !isConnected && styles.disabledButton
+            ]}
+            onPress={() => handleRadioPress('radio0', '古典音樂')}
+            disabled={!isConnected}
+          >
+            <Text style={styles.radioButtonNumber}>按鈕2</Text>
+            <Text style={styles.radioButtonText}>古典音樂</Text>
+            <Text style={styles.radioButtonCode}>radio0</Text>
+          </TouchableOpacity>
+        </View>
 
-      <View style={styles.radioSection}>
-        <TouchableOpacity
-          style={[styles.radioButton, { backgroundColor: colors.accent }, !isConnected && styles.disabledButton]}
-          onPress={() => handleButtonPress('RadioRingCon77/playmusic', '美食廣播')}
-          disabled={!isConnected}
-        >
-          <Text style={styles.radioButtonText}>美食廣播</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.radioButton, { backgroundColor: colors.accent }, !isConnected && styles.disabledButton]}
-          onPress={() => handleButtonPress('RadioRingCon77/playmusic', '新客家廣播')}
-          disabled={!isConnected}
-        >
-          <Text style={styles.radioButtonText}>新客家廣播</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.radioButton, { backgroundColor: '#ffb6c1' }, !isConnected && styles.disabledButton]}
-          onPress={() => handleButtonPress('RadioRingCon77/playmusic', 'stop')}
-          disabled={!isConnected}
-        >
-          <Text style={styles.radioButtonText}>停止</Text>
-        </TouchableOpacity>
+        <View style={styles.radioSection}>
+          <TouchableOpacity
+            style={[
+              styles.radioButton, 
+              { backgroundColor: '#20B2AA' },
+              currentRadio === 'radio1' && styles.activeRadioButton,
+              !isConnected && styles.disabledButton
+            ]}
+            onPress={() => handleRadioPress('radio1', '台中廣播')}
+            disabled={!isConnected}
+          >
+            <Text style={styles.radioButtonNumber}>按鈕3</Text>
+            <Text style={styles.radioButtonText}>台中廣播</Text>
+            <Text style={styles.radioButtonCode}>radio1</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={[
+              styles.radioButton, 
+              { backgroundColor: '#FF8C00' },
+              currentRadio === 'radio2' && styles.activeRadioButton,
+              !isConnected && styles.disabledButton
+            ]}
+            onPress={() => handleRadioPress('radio2', '城市廣播')}
+            disabled={!isConnected}
+          >
+            <Text style={styles.radioButtonNumber}>按鈕4</Text>
+            <Text style={styles.radioButtonText}>城市廣播</Text>
+            <Text style={styles.radioButtonCode}>radio2</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.radioSection}>
+          <TouchableOpacity
+            style={[
+              styles.radioButton, 
+              { backgroundColor: '#32CD32' },
+              currentRadio === 'radio3' && styles.activeRadioButton,
+              !isConnected && styles.disabledButton
+            ]}
+            onPress={() => handleRadioPress('radio3', '新客家廣播')}
+            disabled={!isConnected}
+          >
+            <Text style={styles.radioButtonNumber}>按鈕1</Text>
+            <Text style={styles.radioButtonText}>新客家廣播</Text>
+            <Text style={styles.radioButtonCode}>radio3</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={[
+              styles.radioButton, 
+              styles.stopButton,
+              currentRadio === 'radiostop' && styles.activeRadioButton,
+              !isConnected && styles.disabledButton
+            ]}
+            onPress={() => handleRadioPress('radiostop', '停止')}
+            disabled={!isConnected}
+          >
+            <Text style={styles.radioButtonNumber}>按鈕1</Text>
+            <Text style={styles.radioButtonText}>⏹ 停止</Text>
+            <Text style={styles.radioButtonCode}>radiostop</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Direction Controls */}
-      <View style={styles.directionSection}>
+      <View style={styles.directionSectionContainer}>
+        <Text style={styles.sectionTitle}>🎮 方向控制</Text>
         <View style={styles.directionRow}>
           <TouchableOpacity
             style={[styles.directionButton, { backgroundColor: colors.highlight }, !isConnected && styles.disabledButton]}
@@ -517,6 +588,7 @@ const MQTTControl = () => {
 
       {/* Data Display Section */}
       <View style={styles.dataSection}>
+        <Text style={styles.sectionTitle}>📊 數據顯示</Text>
         <View style={styles.dataRow}>
           <Text style={styles.dataLabel}>LOADCELL:</Text>
           <Text style={styles.dataValue}>{loadcellValue}</Text>
@@ -708,26 +780,88 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginBottom: 4,
   },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginBottom: 12,
+  },
+  radioSectionContainer: {
+    backgroundColor: colors.card,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 8,
+    borderWidth: 2,
+    borderColor: colors.text,
+  },
+  currentRadioContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.highlight,
+    padding: 8,
+    borderRadius: 4,
+    marginBottom: 12,
+  },
+  currentRadioLabel: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginRight: 8,
+  },
+  currentRadioValue: {
+    fontSize: 14,
+    color: colors.text,
+    fontWeight: 'bold',
+  },
   radioSection: {
     flexDirection: 'row',
     marginBottom: 8,
   },
   radioButton: {
     flex: 1,
-    padding: 16,
+    padding: 12,
     marginHorizontal: 4,
     borderRadius: 8,
     alignItems: 'center',
     borderWidth: 2,
     borderColor: colors.text,
+    minHeight: 80,
+    justifyContent: 'center',
+  },
+  activeRadioButton: {
+    borderWidth: 4,
+    borderColor: '#FFD700',
+    transform: [{ scale: 0.98 }],
+  },
+  radioButtonNumber: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: colors.card,
+    marginBottom: 4,
+    opacity: 0.8,
   },
   radioButtonText: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: colors.text,
+    color: colors.card,
+    textAlign: 'center',
   },
-  directionSection: {
+  radioButtonCode: {
+    fontSize: 10,
+    color: colors.card,
+    marginTop: 4,
+    opacity: 0.7,
+  },
+  stopButton: {
+    backgroundColor: '#DC143C',
+  },
+  directionSectionContainer: {
+    backgroundColor: colors.card,
+    borderRadius: 8,
+    padding: 12,
     marginBottom: 8,
+    borderWidth: 2,
+    borderColor: colors.text,
   },
   directionRow: {
     flexDirection: 'row',
